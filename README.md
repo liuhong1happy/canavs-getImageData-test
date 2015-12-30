@@ -5,7 +5,7 @@
 http://asd0102433.github.io/canavs-getImageData-test/
 
 图片分解 
-http://asd0102433.github.io/canavs-getImageData-test/idnex2.html
+http://asd0102433.github.io/canavs-getImageData-test/index2.html
 
 文字分解
 http://asd0102433.github.io/canavs-getImageData-test/index3.html
