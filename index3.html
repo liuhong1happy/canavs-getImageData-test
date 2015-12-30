@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <style>
+        *{
+            padding: 0;
+            margin: 0;
+        }
+        canvas{
+            padding: 0;
+            border: 1px solid seagreen;
+            background-size:100%;
+            background: url("images/55.jpg") no-repeat;
+        }
+    </style>
+</head>
+<body>
+<script>
+    // stats.js - http://github.com/mrdoob/stats.js
+    var Stats=function(){function f(a,e,b){a=document.createElement(a);a.id=e;a.style.cssText=b;return a}function l(a,e,b){var c=f("div",a,"padding:0 0 3px 3px;text-align:left;background:"+b),d=f("div",a+"Text","font-family:Helvetica,Arial,sans-serif;font-size:9px;font-weight:bold;line-height:15px;color:"+e);d.innerHTML=a.toUpperCase();c.appendChild(d);a=f("div",a+"Graph","width:74px;height:30px;background:"+e);c.appendChild(a);for(e=0;74>e;e++)a.appendChild(f("span","","width:1px;height:30px;float:left;opacity:0.9;background:"+
+    b));return c}function m(a){for(var b=c.children,d=0;d<b.length;d++)b[d].style.display=d===a?"block":"none";n=a}function p(a,b){a.appendChild(a.firstChild).style.height=Math.min(30,30-30*b)+"px"}var q=self.performance&&self.performance.now?self.performance.now.bind(performance):Date.now,k=q(),r=k,t=0,n=0,c=f("div","stats","width:80px;opacity:0.9;cursor:pointer");c.addEventListener("mousedown",function(a){a.preventDefault();m(++n%c.children.length)},!1);var d=0,u=Infinity,v=0,b=l("fps","#0ff","#002"),
+            A=b.children[0],B=b.children[1];c.appendChild(b);var g=0,w=Infinity,x=0,b=l("ms","#0f0","#020"),C=b.children[0],D=b.children[1];c.appendChild(b);if(self.performance&&self.performance.memory){var h=0,y=Infinity,z=0,b=l("mb","#f08","#201"),E=b.children[0],F=b.children[1];c.appendChild(b)}m(n);return{REVISION:14,domElement:c,setMode:m,begin:function(){k=q()},end:function(){var a=q();g=a-k;w=Math.min(w,g);x=Math.max(x,g);C.textContent=(g|0)+" MS ("+(w|0)+"-"+(x|0)+")";p(D,g/200);t++;if(a>r+1E3&&(d=Math.round(1E3*
+            t/(a-r)),u=Math.min(u,d),v=Math.max(v,d),A.textContent=d+" FPS ("+u+"-"+v+")",p(B,d/100),r=a,t=0,void 0!==h)){var b=performance.memory.usedJSHeapSize,c=performance.memory.jsHeapSizeLimit;h=Math.round(9.54E-7*b);y=Math.min(y,h);z=Math.max(z,h);E.textContent=h+" MB ("+y+"-"+z+")";p(F,b/c)}return a},update:function(){k=this.end()}}};"object"===typeof module&&(module.exports=Stats);
+</script>
+
+<div><canvas id="canvas" width="1000"  height="600"></canvas></div>
+<p><input type="text" id="text" value="你好啊..."/>
+<input type="text" id="text2" value="您好"/>
+<input type="text" id="text3" value="快乐!"/></p>
+<button type="button" id="button" style=" margin-top:30px;width: 100px;height: 30px;">开始</button>
+<script>
+
+    var textPixel = function(){
+
+        var RAF = (function() {
+            return window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame || function(callback) {
+                        return window.setTimeout(callback, 1000 / 60);
+                    };
+        })();
+        function getRandom (a , b){
+            var num;
+            num = Math.random()*( a - b ) + b;
+            num = num + 0.5 | 0;
+            return ~~num;
+        }
+        Array.prototype.forEach = function(callback){
+            for(var i = 0 ; i< this.length; i++){
+                callback.call(this[i]);
+            }
+        }
+
+        var focallength = 100; //焦距
+
+        var init = function(getTextValue){
+            this.canvas = document.getElementById('canvas'),
+                    this.ctx= canvas.getContext("2d");
+            this.canvas.width = window.innerWidth;
+            this.canvas.height = 600;
+            this.initialize(getTextValue);
+        };
+
+        init.prototype = {
+            initialize:function(getTextValue){
+                this.textDataArr = getTextValue;
+                this.textDataArrIndex = 0;
+                this.particleActive = 0 ;
+                this.particles = [];
+                this.fillText();
+                this.getTextData();
+                this.initDraw();
+            },
+            fillText:function(){
+                var text = this.textDataArr[this.textDataArrIndex];
+                if(text!=="" && text ){
+                    this.ctx.font = "180px 微软雅黑 bold";
+                    this.ctx.fillStyle = "reba(180,180,180,1)";
+                    this.ctx.textAlign = "center";
+                    this.ctx.textBaseline = "middle";
+                    this.ctx.fillText(text ,this.canvas.width / 2 , this.canvas.height /2);
+                }
+            },
+            getTextData:function(){
+                var textData = this.ctx.getImageData( 0 ,0 ,this.canvas.width , this.canvas.height );
+                this.ctx.clearRect(0 , 0 ,this.canvas.width , this.canvas.height);
+                this.particles = [];
+                for(var x  = 0; x < textData.width;x+=6){
+                    for(var y = 0; y < textData.height; y+=6){
+                        var i = 4*( y*textData.width + x);
+                        if(textData.data[i+3] > 126){
+                            var aPixel = new Particle( x+3 , y+3 ,this.canvas,this.ctx ,3);
+                            this.particles.push(aPixel);
+                        }
+                    }
+                }
+            },
+            initDraw:function(){
+                this.particles.forEach(function(){
+                    this.mx = ~~ ( Math.random() * this.canvas.width );
+                    this.my = ~~ ( Math.random() * this.canvas.width );
+                    this.mz = Math.random() * focallength * 2 - focallength ;
+                    this.newx = ~~ ( Math.random() * this.canvas.width );
+                    this.newy = ~~ ( Math.random() * this.canvas.width );
+                    this.newz = Math.random() * focallength * 2 - focallength;
+                    this.paint();
+                })
+
+            },
+            annimation:function(){
+                var that = this;
+
+                this.ctx.save();
+                this.ctx.globalAlpha =0.1;
+//                this.ctx.fillStyle = "#000"
+                this.ctx.globalCompositeOperation="destination-out";
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                this.ctx.restore();
+
+                this.particles.forEach(function () {
+                    if(that.particleActive == 0) {
+                        if (Math.abs(this.endx - this.mx) < 0.1 && Math.abs(this.endy - this.my) < 0.1 && Math.abs(this.endz - this.mz) < 0.1) {
+                            this.mx = this.endx;
+                            this.my = this.endy;
+                            this.mz = this.endz;
+                            setTimeout(function(){
+                                that.particleActive = 1;
+                            },600)
+
+                        } else {
+                            this.mx = this.mx + (this.endx - this.mx) * 0.08;
+                            this.my = this.my + (this.endy - this.my) * 0.08;
+                            this.mz = this.mz + (this.endz - this.mz) * 0.08;
+                        }
+                    }else if( that.particleActive == 1 ){
+                        if (Math.abs(this.newx - this.mx) < 0.1 && Math.abs(this.newy - this.my) < 0.1 && Math.abs(this.newz - this.mz) < 0.1) {
+                            this.mx = this.newx;
+                            this.my = this.newy;
+                            this.mz = this.newz;
+                            that.particleActive = 2;
+                        } else {
+                            this.mx = this.mx + (this.newx - this.mx) * 0.08;
+                            this.my = this.my + (this.newy - this.my) * 0.08;
+                            this.mz = this.mz + (this.newz - this.mz) * 0.08;
+                        }
+                    }
+                    this.paint();
+                })
+            },
+            start:function(){
+                var that = this;
+                this.annimation();
+                if(this.particleActive != 2){
+                    RAF(function(){
+                        that.start()
+                    })
+                }
+                else{
+                    this.textDataArrIndex +=1;
+                    if(this.textDataArrIndex<=2) {
+                        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                        this.particleActive = 0;
+                        this.fillText();
+                        this.getTextData();
+                        this.initDraw()
+                        this.annimation()
+                        that.start()
+                    }
+                }
+            }
+
+        }
+
+        var Particle = function ( x, y ,canvas ,ctx , r){
+            this.canvas = canvas;
+            this.color = getRandom(255,1)  +","+ getRandom(255,1) + "," + getRandom(255,1) + ","
+            this.ctx = ctx;
+            this.endx = x;
+            this.endy = y;
+            this.endz = 0;
+            this.mx = 0;
+            this.my = 0;
+            this.newz = 0;
+            this.newx =0;
+            this.newy =0;
+            this.newz= 0;
+            this.radius = r;
+        }
+
+        Particle.prototype = {
+            paint:function(){
+                this.scale = focallength / (focallength + this.mz);
+                this.ctx.beginPath();
+                this.ctx.arc(
+                        this.canvas.width / 2 + (this.mx - this.canvas.width / 2) * this.scale,
+                        this.canvas.height / 2 + (this.my - this.canvas.height / 2)* this.scale,
+                        this.radius * this.scale , 0  , 2* Math.PI
+                )
+                this.ctx.fillStyle = "rgba("+ this.color + this.scale +")";
+//                this.ctx.fillStyle = "rgba(200,200,200,"+ this.scale +")";
+                this.ctx.fill();
+
+            }
+
+        }
+
+        return init;
+
+    }();
+
+
+    var app;
+    document.getElementById("button").addEventListener("click",function(){
+        start();
+    },false)
+
+    function start(){
+        var getTextValue = function(){
+            var target = document.getElementsByTagName("input");
+            var textArr =[];
+            for(var i = 0;i< target.length;i++ ){
+                var value = target[i].value;
+                if(!!value){
+                    textArr.push(value);
+                }else{
+                    textArr.push("null");
+
+                }
+            }
+            return textArr;
+        }();
+        app = new textPixel(getTextValue);
+        app.start();
+    }
+
+
+
+
+
+</script>
+<script>
+    var stats = new Stats();
+    stats.setMode( 0 ); // 0: fps, 1: ms, 2: mb
+    // align top-left
+    stats.domElement.style.position = 'absolute';
+    stats.domElement.style.left = '0px';
+    stats.domElement.style.top = '0px';
+    document.body.appendChild( stats.domElement );
+    var update = function () {
+        stats.begin();
+        stats.end();
+        requestAnimationFrame( update );
+    };
+    requestAnimationFrame( update );
+</script>
+</body>
+</html>

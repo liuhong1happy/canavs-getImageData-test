@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <style>
+        label{
+            padding: 20px;
+            display: block;
+        }
+        input{
+            width: 300px;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas" style="position: absolute;right: 10px;border: 1px solid darkred"></canvas>
+    <label for="red-range">
+        red&nbsp;&nbsp;&nbsp;&nbsp;通道:
+        <input type="range" id="red-range" class="range" name="red" value="0" min="1" max="255" />
+    </label>
+    <br/>
+    <label for="green-range">
+        green通道:
+        <input type="range" id="green-range" class="range" name="green" value="0" min="1" max="255" />
+    </label>
+    <br/>
+    <label for="bule-range">
+        bule &nbsp;&nbsp;通道:
+        <input type="range" id="bule-range" class="range" name="bule" value="0" min="1" max="255" />
+    </label>
+
+    <script>
+        var canvas = document.getElementById('canvas');
+        var ctx = canvas.getContext("2d");
+        var img;
+        var testImages = {
+            init:function(){
+                var that = this;
+                img = new Image();
+                img.src = "images/1.jpeg";
+                img.onload = function(){
+                    var width = canvas.width = img.width;
+                    var height = canvas.height = img.height;
+                    ctx.drawImage( img , 0 ,0 ,width , height );
+                    var currentImgColorArr = that.getImagesData();
+                    console.log(currentImgColorArr);
+                    that.main(canvas , ctx ,currentImgColorArr)
+                }
+            },
+            main:function(canvas , ctx ,currentImgColorArr){
+                var currentImgColorArr = currentImgColorArr;
+                var elementRangeArr = document.getElementsByClassName('range');
+
+                (function(){
+                    for(var i=0 ; i< elementRangeArr.length;i++){
+                        elementRangeArr[i].addEventListener("change",function(){
+                            console.dir(this)
+                            modifyImgColor(this.value , this.name);
+                        },false);
+                    }
+                }())
+
+                function modifyImgColor(value , color ){
+                    var colorIndex = null;
+                    if(color == "red"  ){ colorIndex = 0 };
+                    if(color == "green"){ colorIndex = 1 };
+                    if(color == "bule" ){ colorIndex = 2 };
+                    for(colorIndex; colorIndex < currentImgColorArr.data.length ;colorIndex+=4 ){
+                        currentImgColorArr.data[colorIndex] = currentImgColorArr.data[colorIndex] + value / 10;
+                    };
+                    ctx.putImageData(currentImgColorArr,0,0);
+
+                };
+            },
+            getImagesData:function(){
+                var imageData = ctx.getImageData(0, 0, canvas.width,canvas.height);
+                return imageData;
+            }
+        }
+        testImages.init();
+    </script>
+</body>
+</html>

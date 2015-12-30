@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <style>
+        *{
+            padding: 0;
+            margin: 0;
+        }
+        canvas{
+            padding: 0;
+            background: #000;
+            border: 1px solid seagreen;
+        }
+    </style>
+</head>
+<body>
+<script>
+    // stats.js - http://github.com/mrdoob/stats.js
+    var Stats=function(){function f(a,e,b){a=document.createElement(a);a.id=e;a.style.cssText=b;return a}function l(a,e,b){var c=f("div",a,"padding:0 0 3px 3px;text-align:left;background:"+b),d=f("div",a+"Text","font-family:Helvetica,Arial,sans-serif;font-size:9px;font-weight:bold;line-height:15px;color:"+e);d.innerHTML=a.toUpperCase();c.appendChild(d);a=f("div",a+"Graph","width:74px;height:30px;background:"+e);c.appendChild(a);for(e=0;74>e;e++)a.appendChild(f("span","","width:1px;height:30px;float:left;opacity:0.9;background:"+
+    b));return c}function m(a){for(var b=c.children,d=0;d<b.length;d++)b[d].style.display=d===a?"block":"none";n=a}function p(a,b){a.appendChild(a.firstChild).style.height=Math.min(30,30-30*b)+"px"}var q=self.performance&&self.performance.now?self.performance.now.bind(performance):Date.now,k=q(),r=k,t=0,n=0,c=f("div","stats","width:80px;opacity:0.9;cursor:pointer");c.addEventListener("mousedown",function(a){a.preventDefault();m(++n%c.children.length)},!1);var d=0,u=Infinity,v=0,b=l("fps","#0ff","#002"),
+            A=b.children[0],B=b.children[1];c.appendChild(b);var g=0,w=Infinity,x=0,b=l("ms","#0f0","#020"),C=b.children[0],D=b.children[1];c.appendChild(b);if(self.performance&&self.performance.memory){var h=0,y=Infinity,z=0,b=l("mb","#f08","#201"),E=b.children[0],F=b.children[1];c.appendChild(b)}m(n);return{REVISION:14,domElement:c,setMode:m,begin:function(){k=q()},end:function(){var a=q();g=a-k;w=Math.min(w,g);x=Math.max(x,g);C.textContent=(g|0)+" MS ("+(w|0)+"-"+(x|0)+")";p(D,g/200);t++;if(a>r+1E3&&(d=Math.round(1E3*
+            t/(a-r)),u=Math.min(u,d),v=Math.max(v,d),A.textContent=d+" FPS ("+u+"-"+v+")",p(B,d/100),r=a,t=0,void 0!==h)){var b=performance.memory.usedJSHeapSize,c=performance.memory.jsHeapSizeLimit;h=Math.round(9.54E-7*b);y=Math.min(y,h);z=Math.max(z,h);E.textContent=h+" MB ("+y+"-"+z+")";p(F,b/c)}return a},update:function(){k=this.end()}}};"object"===typeof module&&(module.exports=Stats);
+</script>
+
+    <canvas id="canvas"></canvas>
+    <script>
+
+        var imgPixel = function(){
+
+            var canvas = document.getElementById("canvas"),
+                   ctx = canvas.getContext("2d"),
+                    particleArr = [];
+
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            var img = new Image();
+            img.src = "images/love2.png";
+            imaLoad(img,function(){
+                ctx.drawImage( img , canvas.width / 2 - img.width / 2 , canvas.height / 2 - img.height / 2 )
+                getImagesData();
+                console.log(particleArr)
+                game.render();
+            })
+            var Pixel = function( x , y , color ){
+                this.endx = getRandom(canvas.width , 1);
+                this.endy = getRandom(canvas.height , 1);
+                this.x = x;
+                this.y = y;
+                this.alpha = 0.8;
+                this.color = color;
+                this.canvas = document.createElement('canvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.canvas.width = 20;
+                this.canvas.height = 20;
+                this.seppd = 0.01;
+            }
+            Pixel.prototype = {
+                enter:function(){
+                    this.vx = ( this.endx - this.x ) * this.seppd;
+                    this.vy = ( this.endy - this.y ) * this.seppd;
+                },
+                paint:function(){
+
+                    ctx.fillStyle = "rgba(" + this.color.r + "," + this.color.g + "," + this.color.b + ","+ this.alpha +")";
+                    ctx.fillRect( this.x, this.y , 4 , 4 );
+//                    ctx.beginPath();
+//                    ctx.arc( 10 ,10 , 5 , 0 , Math.PI*2 );
+//                    ctx.fillStyle = "#999999" ;
+//                    ctx.fill();
+//                    ctx.fillRect( this.x, this.y , 10 , 10 );
+                },
+                move: function(){
+
+                    if(Math.abs(this.endx - this.x) < 0.01 && Math.abs(this.endy - this.y) < 0.01){
+                        this.x = this.endx;
+                        this.y = this.endy;
+                        game.leave.Switch = false;
+                    }else{
+                        this.x += this.vx;
+                        this.y += this.vy;
+                    }
+//                    if( this.x > canvas.width || this.x < 0 ){
+//                        this.vx = this.vx * (-1);
+//                    }
+//                    if(this.y > canvas.height || this.y < 0 ){
+//                        this.vy = this.vy * -1;
+//                    }
+//                    this.x += this.vx;
+//                    this.y += this.vy;
+                    this.paint();
+                }
+
+            }
+
+            function imaLoad(img , callback){
+                if(img.complete){
+                    callback.call(img);
+                }else{
+                    img.onload = function(){
+                        callback.call(img);
+                    }
+                }
+            }
+
+            function getImagesData(){
+                var imgData = ctx.getImageData(0 , 0 , canvas.width , canvas.height );
+                ctx.clearRect(0,0,canvas.width,canvas.height);
+                var place =0;
+                for( var x = 0 ; x < imgData.width; x+=1 ){
+                    for( var y = 0; y < imgData.height; y+=1){
+                        var i = 4*( y*imgData.width + x);
+                        if(imgData.data[ i + 3 ] > 126){
+                            place++
+                            var particle = new Pixel( x , y , {r:imgData.data[i], g:imgData.data[i+1], b:imgData.data[i+2]} )
+                            if(place%1 == 0){
+                                particleArr.push( particle );
+                            }
+                        };
+                    };
+                };
+            }
+
+            var RAF = (function() {
+                return window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame || function(callback) {
+                            return window.setTimeout(callback, 1000 / 60);
+                        };
+            })();
+
+            var game = {
+                render:function(){
+                    for (var i = 0; i < particleArr.length; i++) {
+                        particleArr[i].enter();
+                        particleArr[i].paint();
+                    }
+                    this.leave();
+                    this.loop()
+                },
+                loop:function(){
+                    ctx.clearRect(0,0,canvas.width,canvas.height);
+                    for (var i = 0; i < particleArr.length; i++) {
+                        particleArr[i].move();
+                    }
+                    if(this.leave.Switch){
+                        var that = this;
+                        RAF(function(){
+                            that.loop();
+                        })
+                    }
+                },
+                leave:function(){
+                    this.leave.Switch = true;
+                }
+            }
+
+            function getRandom (a , b){
+                var num;
+                num = Math.random()*( a - b ) + b;
+                num = num + 0.5 | 0;
+                return ~~num;
+            }
+
+            return game;
+
+
+        }();
+
+    </script>
+<script>
+    var stats = new Stats();
+    stats.setMode( 0 ); // 0: fps, 1: ms, 2: mb
+    // align top-left
+    stats.domElement.style.position = 'absolute';
+    stats.domElement.style.left = '0px';
+    stats.domElement.style.top = '0px';
+    document.body.appendChild( stats.domElement );
+    var update = function () {
+        stats.begin();
+        stats.end();
+        requestAnimationFrame( update );
+    };
+    requestAnimationFrame( update );
+</script>
+</body>
+</html>
